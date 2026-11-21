@@ -20,6 +20,8 @@ import type {
   DeleteCategoryResult,
   ErrorCode,
   FieldError,
+  ImportLinksInput,
+  ImportLinksResponse,
   LinkItem,
   ListResponse,
   Rating,
@@ -40,6 +42,8 @@ import createLinkDef from '../../mock-data/links/create.json'
 import updateLinkDef from '../../mock-data/links/update.json'
 import deleteLinkDef from '../../mock-data/links/delete.json'
 import linkThumbnailDef from '../../mock-data/links/thumbnail.json'
+import importLinksDef from '../../mock-data/links/import.json'
+import { parseBulkLinks, MAX_ENTRIES } from '../lib/bulk-links'
 
 /* ---------- Contract plumbing ---------- */
 
@@ -261,6 +265,52 @@ export class LinkManagementService implements LinkManagementApi {
     return this.request(deleteLinkDef, { id }, () => {
       this.findLink(id)
       this.db.links = this.db.links.filter((l) => l.id !== id)
+    })
+  }
+
+  importLinks(input: ImportLinksInput): Promise<ImportLinksResponse> {
+    return this.request(importLinksDef, {}, () => {
+      const details: FieldError[] = []
+      const entries = typeof input.text === 'string' ? parseBulkLinks(input.text) : []
+      if (!entries.length) details.push({ field: 'text', message: 'Paste at least one link to import.' })
+      else if (entries.length > MAX_ENTRIES)
+        details.push({ field: 'text', message: `One import can take at most ${MAX_ENTRIES} links. Split it into smaller batches.` })
+      if (input.categoryId === undefined) details.push({ field: 'categoryId', message: 'Pick a category for the imported links.' })
+      else if (input.categoryId !== null && !this.db.categories.some((c) => c.id === input.categoryId))
+        details.push({ field: 'categoryId', message: 'That category no longer exists. Pick another.' })
+      if (details.length) throw new ApiError('VALIDATION_FAILED', details)
+
+      const created: LinkItem[] = []
+      const skipped: ImportLinksResponse['data']['skipped'] = []
+      for (const e of entries) {
+        try {
+          const clean = this.validateLink({ title: e.title, url: e.url, description: e.description, categoryId: input.categoryId }, null)
+          const now = new Date(Date.now() + created.length).toISOString()
+          const link: LinkItem = {
+            id: crypto.randomUUID(),
+            title: clean.title!,
+            url: clean.url!,
+            description: clean.description ?? null,
+            categoryId: clean.categoryId ?? null,
+            rating: 0,
+            createdAt: now,
+            updatedAt: now,
+          }
+          this.db.links.unshift(link)
+          created.push(link)
+        } catch (error) {
+          if (!(error instanceof ApiError)) throw error
+          skipped.push({
+            entry: e.entry,
+            line: e.line,
+            title: e.title,
+            url: e.url,
+            code: error.code === 'DUPLICATE_URL' ? 'DUPLICATE_URL' : 'VALIDATION_FAILED',
+            message: error.details?.map((d) => d.message).join(' ') || error.message,
+          })
+        }
+      }
+      return { data: { created, skipped }, meta: { total: entries.length, created: created.length, skipped: skipped.length } }
     })
   }
 

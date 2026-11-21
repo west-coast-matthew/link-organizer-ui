@@ -9,6 +9,7 @@ import {
   useCreateLink,
   useDeleteCategory,
   useDeleteLink,
+  useImportLinks,
   useLinks,
   useUpdateCategory,
   useUpdateLink,
@@ -16,11 +17,14 @@ import {
 import { Sidebar, type Selection } from './components/Sidebar'
 import { LinkCard } from './components/LinkCard'
 import { LinkForm } from './components/LinkForm'
+import { BulkImportForm } from './components/BulkImportForm'
 import { StatusText } from './components/StatusText'
-import { Annotated, Eyebrow, Icon, Toggle } from './components/ui'
+import { Eyebrow, Icon, Toggle } from './components/ui'
 
 type Sort = 'newest' | 'rating'
-type Editor = { mode: 'add' } | { mode: 'edit'; link: LinkItem } | null
+/** `categoryId` preselects a category when the dialog is opened from the sidebar. */
+type Editor = { mode: 'add'; categoryId?: string } | { mode: 'edit'; link: LinkItem } | null
+type BulkImport = { categoryId: string | null } | null
 
 /** A card wired to its own update/delete requests, so each card shows its own status. */
 function ConnectedLinkCard({
@@ -75,6 +79,7 @@ export default function App() {
 
   const createLink = useCreateLink()
   const editLink = useUpdateLink()
+  const importLinks = useImportLinks()
   const createCategory = useCreateCategory()
   const renameCategory = useUpdateCategory()
   const deleteCategory = useDeleteCategory()
@@ -83,6 +88,7 @@ export default function App() {
   const [sort, setSort] = useState<Sort>('newest')
   const [query, setQuery] = useState('')
   const [editor, setEditor] = useState<Editor>(null)
+  const [bulkImport, setBulkImport] = useState<BulkImport>(null)
 
   const openEditor = (next: Exclude<Editor, null>) => {
     createLink.reset()
@@ -90,6 +96,14 @@ export default function App() {
     setEditor(next)
   }
   const closeEditor = useCallback(() => setEditor(null), [])
+
+  const selectedCategoryId = selection.kind === 'category' ? selection.id : null
+  const openBulkImport = (categoryId: string | null) => {
+    importLinks.reset()
+    setBulkImport({ categoryId })
+  }
+  const closeBulkImport = useCallback(() => setBulkImport(null), [])
+  const savedUrls = useMemo(() => new Set(links.map((l) => l.url)), [links])
 
   const saveLink = (draft: LinkDraft) => {
     if (editor?.mode === 'edit') editLink.mutate({ id: editor.link.id, input: draft }, { onSuccess: closeEditor })
@@ -155,6 +169,8 @@ export default function App() {
           if (selection.kind === 'category' && subtreeIds(categories, id).has(selection.id)) setSelection({ kind: 'all' })
           deleteCategory.mutate(id)
         }}
+        onAddLink={(categoryId) => openEditor({ mode: 'add', categoryId })}
+        onImportLinks={openBulkImport}
         status={sidebarStatus}
       />
 
@@ -180,20 +196,23 @@ export default function App() {
               </p>
             )}
           </div>
-          <button type="button" className="btn btn--primary btn--lg mono" onClick={() => openEditor({ mode: 'add' })}>
-            <Icon name="plus" size={16} /> Add link
-          </button>
+          <div className="hero__actions">
+            <button type="button" className="btn btn--ghost btn--lg mono" onClick={() => openBulkImport(selectedCategoryId)}>
+              <Icon name="import" size={16} /> Import
+            </button>
+            <button type="button" className="btn btn--primary btn--lg mono" onClick={() => openEditor({ mode: 'add' })}>
+              <Icon name="plus" size={16} /> Add link
+            </button>
+          </div>
         </section>
 
         <div className="toolbar">
-          <Annotated>
-            <Toggle
-              left={{ value: 'newest', label: 'Newest' }}
-              right={{ value: 'rating', label: 'Top rated' }}
-              value={sort}
-              onChange={setSort}
-            />
-          </Annotated>
+          <Toggle
+            left={{ value: 'newest', label: 'Newest' }}
+            right={{ value: 'rating', label: 'Top rated' }}
+            value={sort}
+            onChange={setSort}
+          />
           <label className="search">
             <Icon name="search" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search links…" aria-label="Search links" />
@@ -244,11 +263,28 @@ export default function App() {
             key="editor"
             categories={categories}
             initial={editor.mode === 'edit' ? editor.link : undefined}
-            defaultCategoryId={selection.kind === 'category' ? selection.id : null}
+            defaultCategoryId={editor.mode === 'add' && editor.categoryId ? editor.categoryId : selectedCategoryId}
             onClose={closeEditor}
             onSave={saveLink}
             saving={linkSave.isPending}
             serverError={linkSave.isError ? describeError(linkSave.error) : undefined}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {bulkImport && (
+          <BulkImportForm
+            key="bulk-import"
+            categories={categories}
+            savedUrls={savedUrls}
+            defaultCategoryId={bulkImport.categoryId}
+            onImport={(input) => importLinks.mutate(input)}
+            onClose={closeBulkImport}
+            onReset={importLinks.reset}
+            importing={importLinks.isPending}
+            serverError={importLinks.isError ? describeError(importLinks.error) : undefined}
+            result={importLinks.data}
           />
         )}
       </AnimatePresence>

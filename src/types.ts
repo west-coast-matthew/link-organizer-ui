@@ -57,6 +57,24 @@ export interface ListResponse<T> {
   data: T[]
   meta: { total: number }
 }
+export interface ImportLinksInput {
+  /** Bulk link text: entries of title, link and optional description, separated by blank lines. */
+  text: string
+  /** Category for every imported link; null imports them as unsorted. */
+  categoryId: string | null
+}
+export interface SkippedImportEntry {
+  entry: number
+  line: number
+  title: string
+  url: string
+  code: 'VALIDATION_FAILED' | 'DUPLICATE_URL'
+  message: string
+}
+export interface ImportLinksResponse {
+  data: { created: LinkItem[]; skipped: SkippedImportEntry[] }
+  meta: { total: number; created: number; skipped: number }
+}
 export interface DeleteCategoryResult {
   id: string
   deletedCategoryIds: string[]

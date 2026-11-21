@@ -6,8 +6,16 @@
  * refetching, so a save costs one (slow) round trip, not two.
  */
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Category, CreateCategoryInput, CreateLinkInput, LinkItem, UpdateCategoryInput, UpdateLinkInput } from '../types'
-import { linkMgmtService as api } from './link-mgmnt-client'
+import type {
+  Category,
+  CreateCategoryInput,
+  CreateLinkInput,
+  ImportLinksInput,
+  LinkItem,
+  UpdateCategoryInput,
+  UpdateLinkInput,
+} from '../types'
+import { apiMode, linkMgmtService as api } from './link-mgmnt-client'
 
 export const queryKeys = {
   categories: ['categories'] as const,
@@ -55,9 +63,12 @@ export const THUMBNAIL_POLL_MS = 30_000
  */
 const THUMBNAIL_WAIT_MS = 10 * 60_000
 
-/** True while a link is new enough that its thumbnail may still be on its way. */
+/**
+ * True while a link is new enough that its thumbnail may still be on its way. Never true
+ * with the mock API, which doesn't generate thumbnails.
+ */
 export const isAwaitingThumbnail = (link: Pick<LinkItem, 'createdAt'>) =>
-  Date.now() - Date.parse(link.createdAt) < THUMBNAIL_WAIT_MS
+  apiMode === 'http' && Date.now() - Date.parse(link.createdAt) < THUMBNAIL_WAIT_MS
 
 /**
  * The link's thumbnail image, or null if it has none. While the link is new and has no
@@ -111,6 +122,21 @@ export function useDeleteLink() {
       qc.setQueryData<LinkItem[]>(queryKeys.links, (list) => list?.filter((l) => l.id !== id))
       // Also drops the link's thumbnail, whose key starts with the link's.
       qc.removeQueries({ queryKey: queryKeys.link(id) })
+    },
+  })
+}
+
+/** Bulk import. Created links go straight into the list cache; the result says what was skipped. */
+export function useImportLinks() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: ImportLinksInput) => api.importLinks(input),
+    onSuccess: ({ data }) => {
+      if (!data.created.length) return
+      // Newest first, matching the list endpoint.
+      const added = [...data.created].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      const ids = new Set(added.map((l) => l.id))
+      qc.setQueryData<LinkItem[]>(queryKeys.links, (list) => (list ? [...added, ...list.filter((l) => !ids.has(l.id))] : list))
     },
   })
 }
