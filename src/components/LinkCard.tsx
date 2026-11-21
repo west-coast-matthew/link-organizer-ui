@@ -2,6 +2,7 @@ import { forwardRef, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import type { LinkItem, Rating } from '../types'
 import { StarRating } from './StarRating'
+import { LinkThumbnail } from './LinkThumbnail'
 import { Icon, hostOf, timeAgo } from './ui'
 
 interface Props {
@@ -28,6 +29,8 @@ export const LinkCard = forwardRef<HTMLElement, Props>(function LinkCard({ link,
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
     >
+      <LinkThumbnail link={link} />
+
       <div className="card__body">
         <header className="card__head">
           <h3 className="card__title">{link.title}</h3>

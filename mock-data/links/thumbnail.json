@@ -1,0 +1,21 @@
+{
+  "name": "Get a link's thumbnail",
+  "method": "GET",
+  "path": "/api/links/:id/thumbnail",
+  "description": "The link's thumbnail as a 640×360 WebP image. The server starts generating it in the background when the link is created, from the page's og:image or a screenshot, so expect 404 for a few seconds after a create. If generation fails, this keeps returning 404. The mock backend doesn't generate thumbnails and always answers 404.",
+  "request": { "params": { "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02" }, "query": null, "body": null },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. The body is the image itself, not JSON.",
+      "headers": { "Content-Type": "image/webp" },
+      "body": null
+    },
+    {
+      "status": 404,
+      "description": "The link has no thumbnail yet, or generation failed. (An unknown link id also returns 404, with the usual NOT_FOUND message.)",
+      "body": { "error": { "code": "NOT_FOUND", "message": "This link has no thumbnail yet." } }
+    }
+  ],
+  "errors": ["NOT_FOUND", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}
