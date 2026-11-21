@@ -16,6 +16,8 @@ import {
 } from './services/link-mgmnt-queries'
 import { Sidebar, type Selection } from './components/Sidebar'
 import { LinkCard } from './components/LinkCard'
+import { LinkRow } from './components/LinkRow'
+import { useViewPreferences, type ViewMode } from './stores/view-preferences'
 import { LinkForm } from './components/LinkForm'
 import { BulkImportForm } from './components/BulkImportForm'
 import { StatusText } from './components/StatusText'
@@ -26,16 +28,18 @@ type Sort = 'newest' | 'rating'
 type Editor = { mode: 'add'; categoryId?: string } | { mode: 'edit'; link: LinkItem } | null
 type BulkImport = { categoryId: string | null } | null
 
-/** A card wired to its own update/delete requests, so each card shows its own status. */
-function ConnectedLinkCard({
+/** A card or list row wired to its own update/delete requests, so each one shows its own status. */
+function ConnectedLink({
   link,
   path,
   onEdit,
+  view,
   ref,
 }: {
   link: LinkItem
   path: string[]
   onEdit: () => void
+  view: ViewMode
   ref?: Ref<HTMLElement>
 }) {
   const update = useUpdateLink()
@@ -58,8 +62,9 @@ function ConnectedLinkCard({
     </StatusText>
   ) : null
 
+  const Item = view === 'list' ? LinkRow : LinkCard
   return (
-    <LinkCard
+    <Item
       ref={ref}
       link={shown}
       path={path}
@@ -89,6 +94,8 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [editor, setEditor] = useState<Editor>(null)
   const [bulkImport, setBulkImport] = useState<BulkImport>(null)
+  const viewMode = useViewPreferences((s) => s.viewMode)
+  const setViewMode = useViewPreferences((s) => s.setViewMode)
 
   const openEditor = (next: Exclude<Editor, null>) => {
     createLink.reset()
@@ -213,6 +220,28 @@ export default function App() {
             value={sort}
             onChange={setSort}
           />
+          <div className="view-switch" role="radiogroup" aria-label="Layout">
+            {(
+              [
+                ['cards', 'grid', 'Cards'],
+                ['list', 'list', 'List'],
+              ] as const
+            ).map(([mode, icon, label]) => (
+              <button
+                key={mode}
+                type="button"
+                role="radio"
+                aria-checked={viewMode === mode}
+                title={`Show as ${label.toLowerCase()}`}
+                className={`view-switch__btn ${viewMode === mode ? 'is-active' : ''}`}
+                onClick={() => setViewMode(mode)}
+              >
+                {viewMode === mode && <motion.span layoutId="view-switch" className="view-switch__thumb" />}
+                <Icon name={icon} size={15} />
+                <span className="sr-only">{label}</span>
+              </button>
+            ))}
+          </div>
           <label className="search">
             <Icon name="search" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search links…" aria-label="Search links" />
@@ -229,11 +258,14 @@ export default function App() {
           {linksQuery.isRefetching && <StatusText>Refreshing links…</StatusText>}
         </div>
 
-        <motion.div layout className="grid">
+        <motion.div layout className={viewMode === 'list' ? 'list' : 'grid'}>
           <AnimatePresence mode="popLayout">
             {visible.map((link) => (
-              <ConnectedLinkCard
+              <ConnectedLink
+                // Same key in both layouts: switching swaps the element in place instead of
+                // playing every card's exit animation.
                 key={link.id}
+                view={viewMode}
                 link={link}
                 path={selection.kind === 'category' && link.categoryId === selection.id ? [] : categoryPath(categories, link.categoryId)}
                 onEdit={() => openEditor({ mode: 'edit', link })}
