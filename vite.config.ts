@@ -37,6 +37,7 @@ export default defineConfig({
         app: resolve(import.meta.dirname, 'index.html'),
         // Design artboards — served at /mock/<name>/ in dev and built alongside the app.
         'mock-form-controls': resolve(import.meta.dirname, 'mock/form-controls/index.html'),
+        'mock-application-state': resolve(import.meta.dirname, 'mock/application-state/index.html'),
       },
     },
   },
