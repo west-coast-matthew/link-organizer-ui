@@ -39,6 +39,7 @@ import getLinkDef from '../../mock-data/links/get.json'
 import createLinkDef from '../../mock-data/links/create.json'
 import updateLinkDef from '../../mock-data/links/update.json'
 import deleteLinkDef from '../../mock-data/links/delete.json'
+import linkThumbnailDef from '../../mock-data/links/thumbnail.json'
 
 /* ---------- Contract plumbing ---------- */
 
@@ -263,6 +264,14 @@ export class LinkManagementService implements LinkManagementApi {
     })
   }
 
+  /** The mock doesn't generate thumbnails: every link answers "none yet". */
+  getLinkThumbnail(id: string): Promise<Blob | null> {
+    return this.request(linkThumbnailDef, { id }, () => {
+      this.findLink(id)
+      return null
+    })
+  }
+
   /* ----- Internals ----- */
 
   /**
@@ -284,9 +293,10 @@ export class LinkManagementService implements LinkManagementApi {
       }
       const result = handler()
       this.persist()
-      this.log(def.method, path, def.name, result === undefined ? 204 : def.method === 'POST' ? 201 : 200, started)
+      const status = result === undefined ? 204 : result === null ? 404 : def.method === 'POST' ? 201 : 200
+      this.log(def.method, path, def.name, status, started)
       // Hand back a copy, as a network response would be: callers can't mutate the mock DB.
-      return result === undefined ? result : structuredClone(result)
+      return result == null ? result : structuredClone(result)
     } catch (error) {
       if (error instanceof ApiError) this.log(def.method, path, def.name, error.status, started, error.body)
       throw error

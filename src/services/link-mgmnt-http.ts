@@ -88,7 +88,33 @@ export class HttpLinkManagementService implements LinkManagementApi {
     await this.request<void>('DELETE', `/api/links/${encodeURIComponent(id)}`)
   }
 
+  async getLinkThumbnail(id: string): Promise<Blob | null> {
+    const url = `${this.baseUrl}/api/links/${encodeURIComponent(id)}/thumbnail`
+    let res: Response
+    try {
+      res = await fetch(url, { cache: 'no-store' })
+    } catch {
+      throw this.unreachable()
+    }
+    // 404 means "not generated yet" (or generation failed); the caller decides whether to keep checking.
+    if (res.status === 404) return null
+    if (!res.ok) throw await this.errorFrom(res)
+    return res.blob()
+  }
+
   /* ----- Internals ----- */
+
+  private unreachable() {
+    // Network failure: server down, wrong address, or blocked by CORS.
+    return new ApiError('SERVICE_UNAVAILABLE', undefined, `Can't reach the server at ${this.baseUrl}. Check that the API is running.`, 0)
+  }
+
+  private async errorFrom(res: Response) {
+    const payload: unknown = await res.json().catch(() => undefined)
+    const error = (payload as Partial<ErrorBody> | undefined)?.error
+    if (error?.code) return new ApiError(error.code as ErrorCode, error.details, error.message, res.status)
+    return new ApiError(res.status >= 500 ? 'INTERNAL_ERROR' : 'NOT_FOUND', undefined, undefined, res.status)
+  }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     let res: Response
@@ -102,19 +128,13 @@ export class HttpLinkManagementService implements LinkManagementApi {
         body: body === undefined ? undefined : JSON.stringify(body),
       })
     } catch {
-      // Network failure: server down, wrong address, or blocked by CORS.
-      throw new ApiError('SERVICE_UNAVAILABLE', undefined, `Can't reach the server at ${this.baseUrl}. Check that the API is running.`, 0)
+      throw this.unreachable()
     }
 
     if (res.status === 204) return undefined as T
+    if (!res.ok) throw await this.errorFrom(res)
 
     const payload: unknown = await res.json().catch(() => undefined)
-
-    if (!res.ok) {
-      const error = (payload as Partial<ErrorBody> | undefined)?.error
-      if (error?.code) throw new ApiError(error.code as ErrorCode, error.details, error.message, res.status)
-      throw new ApiError(res.status >= 500 ? 'INTERNAL_ERROR' : 'NOT_FOUND', undefined, undefined, res.status)
-    }
     if (payload === undefined) {
       throw new ApiError('INTERNAL_ERROR', undefined, 'The server sent a response the app could not read.', res.status)
     }

@@ -31,6 +31,8 @@ export interface LinkManagementApi {
   createLink(input: CreateLinkInput): Promise<DataResponse<LinkItem>>
   updateLink(id: string, input: UpdateLinkInput): Promise<DataResponse<LinkItem>>
   deleteLink(id: string): Promise<void>
+  /** The link's thumbnail image, or null when it has none (yet). Thumbnails are generated after a create. */
+  getLinkThumbnail(id: string): Promise<Blob | null>
 }
 
 export interface ErrorDefinition {

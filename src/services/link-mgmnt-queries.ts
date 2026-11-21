@@ -14,6 +14,7 @@ export const queryKeys = {
   category: (id: string) => ['categories', id] as const,
   links: ['links'] as const,
   link: (id: string) => ['links', id] as const,
+  thumbnail: (id: string) => ['links', id, 'thumbnail'] as const,
 }
 
 export function createQueryClient() {
@@ -43,6 +44,33 @@ export const useLinks = () => useQuery({ queryKey: queryKeys.links, queryFn: asy
 
 export const useLink = (id: string) =>
   useQuery({ queryKey: queryKeys.link(id), queryFn: async () => (await api.getLink(id)).data })
+
+/* ---------- Thumbnails ---------- */
+
+/** How often to check again for a thumbnail that hasn't been generated yet. */
+export const THUMBNAIL_POLL_MS = 30_000
+/**
+ * Stop checking once a link is this old. The server only generates a thumbnail right after
+ * a create, and a failed generation stays a 404 forever, so polling older links is wasted.
+ */
+const THUMBNAIL_WAIT_MS = 10 * 60_000
+
+/** True while a link is new enough that its thumbnail may still be on its way. */
+export const isAwaitingThumbnail = (link: Pick<LinkItem, 'createdAt'>) =>
+  Date.now() - Date.parse(link.createdAt) < THUMBNAIL_WAIT_MS
+
+/**
+ * The link's thumbnail image, or null if it has none. While the link is new and has no
+ * thumbnail yet, checks again every 30 seconds until one appears.
+ */
+export const useLinkThumbnail = (link: Pick<LinkItem, 'id' | 'createdAt'>) =>
+  useQuery({
+    queryKey: queryKeys.thumbnail(link.id),
+    queryFn: () => api.getLinkThumbnail(link.id),
+    // A thumbnail never changes once generated.
+    staleTime: Infinity,
+    refetchInterval: (query) => (query.state.data || !isAwaitingThumbnail(link) ? false : THUMBNAIL_POLL_MS),
+  })
 
 /* ---------- Cache helpers ---------- */
 
@@ -81,6 +109,7 @@ export function useDeleteLink() {
     mutationFn: (id: string) => api.deleteLink(id),
     onSuccess: (_, id) => {
       qc.setQueryData<LinkItem[]>(queryKeys.links, (list) => list?.filter((l) => l.id !== id))
+      // Also drops the link's thumbnail, whose key starts with the link's.
       qc.removeQueries({ queryKey: queryKeys.link(id) })
     },
   })
