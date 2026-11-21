@@ -1,0 +1,64 @@
+{
+  "name": "Import links in bulk",
+  "method": "POST",
+  "path": "/api/links/import",
+  "description": "Creates many links at once from pasted text. Every imported link is filed in the same category. Each entry is created on its own with the same rules as 'Create a link'; an entry that breaks a rule is skipped and listed in `skipped`, and the others are still created. Imported links aren't rated.",
+  "request": {
+    "params": null,
+    "query": null,
+    "body": {
+      "text": "link 1\nhttp://www.somewhere.com\n\nsome other link\nhttp://www.foo.com\nthis is a really great site....\n\nbad url\nnot-a-url",
+      "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02"
+    }
+  },
+  "format": "Entries are separated by one or more blank lines. In each entry the first line is the title, the second the URL, and any further lines the description. Lines are trimmed; \\n and \\r\\n both work. At most 1,000 entries.",
+  "responses": [
+    {
+      "status": 201,
+      "description": "At least one link was created. (200 with the same body when every entry was skipped.)",
+      "body": {
+        "data": {
+          "created": [
+            {
+              "id": "a73fc6db-7aa8-4bec-bb72-c5f575dbacbc",
+              "title": "link 1",
+              "url": "http://www.somewhere.com",
+              "description": null,
+              "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02",
+              "rating": 0,
+              "createdAt": "2026-11-21T19:20:00.000Z",
+              "updatedAt": "2026-11-21T19:20:00.000Z"
+            },
+            {
+              "id": "873872c9-275c-42aa-b8d1-5895a1a02151",
+              "title": "some other link",
+              "url": "http://www.foo.com",
+              "description": "this is a really great site....",
+              "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02",
+              "rating": 0,
+              "createdAt": "2026-11-21T19:20:00.010Z",
+              "updatedAt": "2026-11-21T19:20:00.010Z"
+            }
+          ],
+          "skipped": [
+            {
+              "entry": 3,
+              "line": 8,
+              "title": "bad url",
+              "url": "not-a-url",
+              "code": "VALIDATION_FAILED",
+              "message": "Enter a web address that starts with http:// or https://."
+            }
+          ]
+        },
+        "meta": { "total": 3, "created": 2, "skipped": 1 }
+      }
+    }
+  ],
+  "rules": [
+    "`text` and `categoryId` are required; `categoryId` may be null for unsorted, otherwise it must exist. Breaking either rejects the whole request with 400 VALIDATION_FAILED.",
+    "More than 1,000 entries rejects the whole request with 400 VALIDATION_FAILED.",
+    "Entries that fail validation or repeat a saved URL (or one earlier in the text) are skipped with code VALIDATION_FAILED or DUPLICATE_URL."
+  ],
+  "errors": ["VALIDATION_FAILED", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

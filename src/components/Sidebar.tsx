@@ -14,6 +14,10 @@ interface Props {
   onCreate: (name: string, parentId: string | null) => void
   onRename: (id: string, name: string) => void
   onDelete: (id: string) => void
+  /** Open the Add link dialog with this category preselected. */
+  onAddLink: (categoryId: string) => void
+  /** Open the bulk import dialog with this category preselected. */
+  onImportLinks: (categoryId: string) => void
   /** Loading / saving / error text for category data, shown above the "New category" button. */
   status?: ReactNode
 }
@@ -63,7 +67,18 @@ function InlineInput({
   )
 }
 
-export function Sidebar({ categories, links, selection, onSelect, onCreate, onRename, onDelete, status }: Props) {
+export function Sidebar({
+  categories,
+  links,
+  selection,
+  onSelect,
+  onCreate,
+  onRename,
+  onDelete,
+  onAddLink,
+  onImportLinks,
+  status,
+}: Props) {
   // Track collapsed rather than expanded nodes so categories that arrive later start open.
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [adding, setAdding] = useState<string | 'root' | null>(null)
@@ -128,6 +143,17 @@ export function Sidebar({ categories, links, selection, onSelect, onCreate, onRe
             </button>
             <span className="nav-item__count mono">{countFor(c.id)}</span>
             <span className="nav-item__actions">
+              <button type="button" title={`Add a link to ${c.name}`} aria-label={`Add a link to ${c.name}`} onClick={() => onAddLink(c.id)}>
+                <Icon name="link" size={14} />
+              </button>
+              <button
+                type="button"
+                title={`Import links into ${c.name}`}
+                aria-label={`Import links into ${c.name}`}
+                onClick={() => onImportLinks(c.id)}
+              >
+                <Icon name="import" size={14} />
+              </button>
               <button
                 type="button"
                 title="Add subcategory"

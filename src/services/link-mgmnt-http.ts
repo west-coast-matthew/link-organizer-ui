@@ -16,6 +16,8 @@ import type {
   DeleteCategoryResult,
   ErrorBody,
   ErrorCode,
+  ImportLinksInput,
+  ImportLinksResponse,
   LinkItem,
   ListResponse,
   Rating,
@@ -86,6 +88,12 @@ export class HttpLinkManagementService implements LinkManagementApi {
 
   async deleteLink(id: string): Promise<void> {
     await this.request<void>('DELETE', `/api/links/${encodeURIComponent(id)}`)
+  }
+
+  async importLinks(input: ImportLinksInput): Promise<ImportLinksResponse> {
+    type WireImport = Omit<ImportLinksResponse, 'data'> & { data: { created: WireLink[]; skipped: ImportLinksResponse['data']['skipped'] } }
+    const res = await this.request<WireImport>('POST', '/api/links/import', input)
+    return { ...res, data: { ...res.data, created: res.data.created.map(fromWire) } }
   }
 
   async getLinkThumbnail(id: string): Promise<Blob | null> {

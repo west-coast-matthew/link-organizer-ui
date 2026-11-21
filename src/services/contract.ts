@@ -12,6 +12,8 @@ import type {
   ErrorBody,
   ErrorCode,
   FieldError,
+  ImportLinksInput,
+  ImportLinksResponse,
   LinkItem,
   ListResponse,
   UpdateCategoryInput,
@@ -31,6 +33,8 @@ export interface LinkManagementApi {
   createLink(input: CreateLinkInput): Promise<DataResponse<LinkItem>>
   updateLink(id: string, input: UpdateLinkInput): Promise<DataResponse<LinkItem>>
   deleteLink(id: string): Promise<void>
+  /** Creates many links from bulk text. Entries that break a rule are skipped, not fatal. */
+  importLinks(input: ImportLinksInput): Promise<ImportLinksResponse>
   /** The link's thumbnail image, or null when it has none (yet). Thumbnails are generated after a create. */
   getLinkThumbnail(id: string): Promise<Blob | null>
 }
