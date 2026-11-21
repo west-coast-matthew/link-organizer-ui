@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  /** Base URL of the real API, e.g. http://127.0.0.1:3000. When unset or empty, the app uses the mock API. */
+  readonly VITE_API_BASE_URL?: string
   /** Shortest emulated API delay in ms (default 3000). */
   readonly VITE_MOCK_MIN_DELAY_MS?: string
   /** Longest emulated API delay in ms (default 6000). */

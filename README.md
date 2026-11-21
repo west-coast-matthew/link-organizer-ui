@@ -17,3 +17,37 @@ The initial effort will be one where we take an MVP approach. We will byoass use
 1. Support the ability to store links by categories in a hierachal manner, i.e. a parent category called 'food links' may have child categories such as 'italian' and 'mexican'.
 2. define links wich reside within an parent category
 3. support user interaction for interactig with links
+
+## Running the app
+
+```sh
+npm install
+npm run dev        # http://127.0.0.1:5173
+```
+
+## Connecting to the API
+
+The app can talk to either of two backends:
+
+- **Mock API (default).** Data comes from the JSON files in `mock-data/` and is saved in the browser's local storage. Every call waits 3–6 seconds and sometimes fails, so the loading and error states can be seen.
+- **Real API.** Calls go to a running [link-organizer-api](../link-organizer-api) server. Its endpoints are documented in `../link-organizer-api/docs/API.md`.
+
+The real API is used whenever `VITE_API_BASE_URL` is set. If it's missing or empty, the app falls back to the mock.
+
+To use the real API:
+
+1. Start the API server (see its README). By default it listens on `http://127.0.0.1:3000`.
+2. Create `.env.local` in this folder (it's ignored by git), or copy `.env.example`, and set the endpoint:
+   ```sh
+   VITE_API_BASE_URL=http://127.0.0.1:3000
+   ```
+   Use the server's base address only, without `/api` or a trailing path.
+3. Restart `npm run dev`. Vite reads the setting only at startup, and bakes it into `npm run build` output.
+
+You can also set it for a single run: `VITE_API_BASE_URL=http://127.0.0.1:3000 npm run dev`.
+
+To go back to the mock, remove the line or leave it empty, then restart. In development the browser console logs which backend is in use (`[api] using …`).
+
+If the app shows "Can't reach the server at …", check that the API is running at that address and that its `CORS_ORIGIN` setting allows `http://127.0.0.1:5173`.
+
+The mock's delay and failure rate are set with `VITE_MOCK_MIN_DELAY_MS`, `VITE_MOCK_MAX_DELAY_MS` and `VITE_MOCK_ERROR_RATE`; see `.env.example`.
