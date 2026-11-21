@@ -1,0 +1,25 @@
+{
+  "Category": {
+    "description": "A folder for links. Categories nest: a category with a parentId is a subcategory of that parent, to any depth.",
+    "fields": {
+      "id": { "type": "string", "format": "uuid", "readOnly": true },
+      "name": { "type": "string", "required": true, "minLength": 1, "maxLength": 80, "description": "Unique among siblings (case-insensitive)." },
+      "parentId": { "type": ["string", "null"], "format": "uuid", "references": "Category.id", "default": null, "description": "null for a top-level category." },
+      "createdAt": { "type": "string", "format": "date-time", "readOnly": true },
+      "updatedAt": { "type": "string", "format": "date-time", "readOnly": true }
+    }
+  },
+  "Link": {
+    "description": "A saved web link.",
+    "fields": {
+      "id": { "type": "string", "format": "uuid", "readOnly": true },
+      "title": { "type": "string", "required": true, "minLength": 1, "maxLength": 200 },
+      "url": { "type": "string", "format": "uri", "required": true, "maxLength": 2048, "description": "Absolute http(s) URL. Unique across all links." },
+      "description": { "type": ["string", "null"], "maxLength": 2000, "default": null },
+      "categoryId": { "type": ["string", "null"], "format": "uuid", "references": "Category.id", "default": null, "description": "Category or subcategory the link is filed in. null means unsorted." },
+      "rating": { "type": "integer", "minimum": 0, "maximum": 5, "default": 0, "description": "0 means not rated; 1-5 are stars." },
+      "createdAt": { "type": "string", "format": "date-time", "readOnly": true, "description": "Time the link was added." },
+      "updatedAt": { "type": "string", "format": "date-time", "readOnly": true }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "name": "List links",
+  "method": "GET",
+  "path": "/api/links",
+  "description": "Every saved link, newest first. The UI filters by category, searches and sorts client-side for now; server-side query parameters can be added to this definition when needed.",
+  "request": { "params": null, "query": null, "body": null },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Also the seed data for the mock backend.",
+      "body": {
+        "data": [
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a01",
+            "title": "Motion for React",
+            "url": "https://motion.dev/docs/react",
+            "description": "Production-ready animation library: layout animations, gestures, exit transitions.",
+            "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05",
+            "rating": 5,
+            "createdAt": "2026-11-20T14:10:00.000Z",
+            "updatedAt": "2026-11-20T14:10:00.000Z"
+          },
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02",
+            "title": "Cacio e pepe, properly",
+            "url": "https://www.seriouseats.com/cacio-e-pepe",
+            "description": "The emulsion trick that keeps the cheese from clumping.",
+            "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02",
+            "rating": 4,
+            "createdAt": "2026-11-19T12:45:00.000Z",
+            "updatedAt": "2026-11-19T12:45:00.000Z"
+          },
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a03",
+            "title": "Birria de res",
+            "url": "https://www.mexicoinmykitchen.com/birria/",
+            "description": null,
+            "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03",
+            "rating": 3,
+            "createdAt": "2026-11-17T19:20:00.000Z",
+            "updatedAt": "2026-11-17T19:20:00.000Z"
+          },
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a04",
+            "title": "You might not need an effect",
+            "url": "https://react.dev/learn/you-might-not-need-an-effect",
+            "description": "When to drop useEffect in favour of derived state and event handlers.",
+            "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05",
+            "rating": 0,
+            "createdAt": "2026-11-15T08:05:00.000Z",
+            "updatedAt": "2026-11-15T08:05:00.000Z"
+          },
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a05",
+            "title": "Designing data-intensive applications, chapter notes",
+            "url": "https://dataintensive.net/",
+            "description": null,
+            "categoryId": null,
+            "rating": 0,
+            "createdAt": "2026-11-12T21:40:00.000Z",
+            "updatedAt": "2026-11-12T21:40:00.000Z"
+          }
+        ],
+        "meta": { "total": 5 }
+      }
+    }
+  ],
+  "errors": ["INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

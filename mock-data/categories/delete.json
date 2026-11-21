@@ -1,0 +1,22 @@
+{
+  "name": "Delete a category",
+  "method": "DELETE",
+  "path": "/api/categories/:id",
+  "description": "Deletes the category and all of its subcategories. Links filed anywhere in that subtree are not deleted: they move to the deleted category's parent, or become unsorted if it was top-level.",
+  "request": { "params": { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01" }, "query": null, "body": null },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Reports everything the delete touched so clients can update their caches.",
+      "body": {
+        "data": {
+          "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01",
+          "deletedCategoryIds": ["6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02", "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03"],
+          "movedLinkIds": ["9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02", "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a03"],
+          "movedTo": null
+        }
+      }
+    }
+  ],
+  "errors": ["NOT_FOUND", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

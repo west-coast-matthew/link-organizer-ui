@@ -1,0 +1,52 @@
+{
+  "name": "Create a link",
+  "method": "POST",
+  "path": "/api/links",
+  "description": "The server sets id, createdAt (the time added) and updatedAt.",
+  "request": {
+    "params": null,
+    "query": null,
+    "body": {
+      "fields": {
+        "title": "Link.title",
+        "url": "Link.url",
+        "description": "Link.description",
+        "categoryId": "Link.categoryId",
+        "rating": "Link.rating"
+      },
+      "example": {
+        "title": "Pozole rojo",
+        "url": "https://www.mexicoinmykitchen.com/pozole-rojo/",
+        "description": "Make the chile sauce a day ahead.",
+        "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03",
+        "rating": 4
+      }
+    }
+  },
+  "responses": [
+    {
+      "status": 201,
+      "description": "Created. Returns the new link.",
+      "body": {
+        "data": {
+          "id": "c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e5f",
+          "title": "Pozole rojo",
+          "url": "https://www.mexicoinmykitchen.com/pozole-rojo/",
+          "description": "Make the chile sauce a day ahead.",
+          "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03",
+          "rating": 4,
+          "createdAt": "2026-11-20T18:10:00.000Z",
+          "updatedAt": "2026-11-20T18:10:00.000Z"
+        }
+      }
+    }
+  ],
+  "errors": ["VALIDATION_FAILED", "DUPLICATE_URL", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"],
+  "rules": [
+    "title and description are trimmed; an empty description is stored as null.",
+    "url must be an absolute http(s) URL, otherwise VALIDATION_FAILED on url.",
+    "url must not match an existing link's url, otherwise DUPLICATE_URL.",
+    "categoryId, when not null, must reference an existing category, otherwise VALIDATION_FAILED on categoryId.",
+    "rating must be an integer from 0 to 5; omitted means 0."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "List categories",
+  "method": "GET",
+  "path": "/api/categories",
+  "description": "Every category as a flat list. Clients build the tree from parentId.",
+  "request": { "params": null, "query": null, "body": null },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Also the seed data for the mock backend.",
+      "body": {
+        "data": [
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "name": "Food links", "parentId": null, "createdAt": "2026-11-01T15:00:00.000Z", "updatedAt": "2026-11-01T15:00:00.000Z" },
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02", "name": "Italian", "parentId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "createdAt": "2026-11-01T15:01:00.000Z", "updatedAt": "2026-11-01T15:01:00.000Z" },
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03", "name": "Mexican", "parentId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "createdAt": "2026-11-01T15:02:00.000Z", "updatedAt": "2026-11-01T15:02:00.000Z" },
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e04", "name": "Engineering", "parentId": null, "createdAt": "2026-11-05T09:30:00.000Z", "updatedAt": "2026-11-05T09:30:00.000Z" },
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05", "name": "React", "parentId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e04", "createdAt": "2026-11-05T09:31:00.000Z", "updatedAt": "2026-11-05T09:31:00.000Z" }
+        ],
+        "meta": { "total": 5 }
+      }
+    }
+  ],
+  "errors": ["INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

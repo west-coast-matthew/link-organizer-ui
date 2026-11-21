@@ -1,0 +1,40 @@
+{
+  "name": "Update a link",
+  "method": "PATCH",
+  "path": "/api/links/:id",
+  "description": "Partial update: send only the fields that change. Rating a link is a PATCH with just { rating }.",
+  "request": {
+    "params": { "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a04" },
+    "query": null,
+    "body": {
+      "fields": {
+        "title": "Link.title",
+        "url": "Link.url",
+        "description": "Link.description",
+        "categoryId": "Link.categoryId",
+        "rating": "Link.rating"
+      },
+      "example": { "rating": 5 }
+    }
+  },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Returns the updated link.",
+      "body": {
+        "data": {
+          "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a04",
+          "title": "You might not need an effect",
+          "url": "https://react.dev/learn/you-might-not-need-an-effect",
+          "description": "When to drop useEffect in favour of derived state and event handlers.",
+          "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05",
+          "rating": 5,
+          "createdAt": "2026-11-15T08:05:00.000Z",
+          "updatedAt": "2026-11-20T18:12:00.000Z"
+        }
+      }
+    }
+  ],
+  "errors": ["VALIDATION_FAILED", "NOT_FOUND", "DUPLICATE_URL", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"],
+  "rules": ["Same rules as create, applied to the fields that are sent."]
+}

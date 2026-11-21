@@ -1,0 +1,25 @@
+{
+  "name": "Get a link",
+  "method": "GET",
+  "path": "/api/links/:id",
+  "request": { "params": { "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02" }, "query": null, "body": null },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK",
+      "body": {
+        "data": {
+          "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02",
+          "title": "Cacio e pepe, properly",
+          "url": "https://www.seriouseats.com/cacio-e-pepe",
+          "description": "The emulsion trick that keeps the cheese from clumping.",
+          "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02",
+          "rating": 4,
+          "createdAt": "2026-11-19T12:45:00.000Z",
+          "updatedAt": "2026-11-19T12:45:00.000Z"
+        }
+      }
+    }
+  ],
+  "errors": ["NOT_FOUND", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

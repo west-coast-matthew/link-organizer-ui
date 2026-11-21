@@ -1,0 +1,28 @@
+{
+  "name": "Update a category",
+  "method": "PATCH",
+  "path": "/api/categories/:id",
+  "description": "Partial update: rename and/or move under a different parent. Send parentId: null to make it top-level.",
+  "request": {
+    "params": { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05" },
+    "query": null,
+    "body": {
+      "fields": { "name": "Category.name", "parentId": "Category.parentId" },
+      "example": { "name": "React & Motion" }
+    }
+  },
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Returns the updated category.",
+      "body": {
+        "data": { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05", "name": "React & Motion", "parentId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e04", "createdAt": "2026-11-05T09:31:00.000Z", "updatedAt": "2026-11-20T18:05:00.000Z" }
+      }
+    }
+  ],
+  "errors": ["VALIDATION_FAILED", "NOT_FOUND", "DUPLICATE_CATEGORY", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"],
+  "rules": [
+    "Same rules as create for the fields that are sent.",
+    "parentId cannot be the category itself or one of its descendants (VALIDATION_FAILED on parentId)."
+  ]
+}

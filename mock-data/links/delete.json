@@ -1,0 +1,8 @@
+{
+  "name": "Delete a link",
+  "method": "DELETE",
+  "path": "/api/links/:id",
+  "request": { "params": { "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a03" }, "query": null, "body": null },
+  "responses": [{ "status": 204, "description": "Deleted. No body.", "body": null }],
+  "errors": ["NOT_FOUND", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}
