@@ -499,3 +499,48 @@ a { color: inherit; text-decoration: none; }
 .status-bar { display: flex; flex-direction: column; gap: 6px; margin: -16px 0 24px; min-height: 20px; }
 .sidebar .status { padding: 0 10px; }
 .card__status { margin-top: 12px; }
+
+/* ---------- Loading / error state panels (LoadingStatePanel, ErrorStatePanel) ---------- */
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 24px;
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+.state-panel__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--surface-2);
+}
+.state-panel__text { min-width: 0; }
+.state-panel__title { margin: 0; font-size: 16px; font-weight: 500; color: var(--text); }
+.state-panel__message { margin: 4px auto 0; max-width: 46ch; font-size: 14px; color: var(--text-2); }
+.state-panel__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+
+.state-panel--error { border-style: solid; border-color: var(--accent-line); background: var(--accent-soft); }
+.state-panel--error .state-panel__icon { color: var(--accent-hover); background: var(--accent-soft); }
+
+.state-panel--compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+.state-panel--compact .state-panel__icon { width: 30px; height: 30px; }
+.state-panel--compact .state-panel__text { flex: 1 1 140px; }
+.state-panel--compact .state-panel__title { font-size: 14px; }
+.state-panel--compact .state-panel__message { margin: 2px 0 0; font-size: 13px; }
+.state-panel--compact .state-panel__actions { margin: 0 0 0 auto; }
+.state-panel--compact .btn { height: 32px; padding: 0 12px; font-size: 12px; }

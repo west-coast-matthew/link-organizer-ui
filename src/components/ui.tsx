@@ -72,6 +72,7 @@ const paths = {
   close: 'M6 6l12 12M18 6L6 18',
   spark: 'M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4',
   check: 'M5 12l5 5 9-10',
+  alert: 'M12 3.5l9 16H3l9-16zM12 10v4.5M12 17.25v.01',
 }
 
 export function Icon({ name, size = 16 }: { name: keyof typeof paths; size?: number }) {
