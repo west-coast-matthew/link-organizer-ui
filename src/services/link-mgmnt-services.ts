@@ -9,8 +9,8 @@
  *   - applies the validation and business rules written in each call definition
  *   - persists to localStorage so data survives a reload, like a real server would
  *
- * Swapping in the real API means reimplementing `request()` with fetch; the public
- * methods and their return types are the contract and should stay as they are.
+ * It's used when VITE_API_BASE_URL is not set (see link-mgmnt-client.ts). The real API
+ * lives in link-mgmnt-http.ts; both implement LinkManagementApi from contract.ts.
  */
 import type {
   Category,
@@ -18,7 +18,6 @@ import type {
   CreateLinkInput,
   DataResponse,
   DeleteCategoryResult,
-  ErrorBody,
   ErrorCode,
   FieldError,
   LinkItem,
@@ -27,9 +26,9 @@ import type {
   UpdateCategoryInput,
   UpdateLinkInput,
 } from '../types'
+import { ApiError, ERRORS, type LinkManagementApi } from './contract'
 
 import models from '../../mock-data/models.json'
-import errorCatalog from '../../mock-data/errors.json'
 import listCategoriesDef from '../../mock-data/categories/list.json'
 import getCategoryDef from '../../mock-data/categories/get.json'
 import createCategoryDef from '../../mock-data/categories/create.json'
@@ -50,40 +49,8 @@ interface CallDefinition {
   errors: string[]
 }
 
-interface ErrorDefinition {
-  status: number
-  message: string
-  transient?: boolean
-}
-
-const ERRORS = errorCatalog.errors as Record<ErrorCode, ErrorDefinition>
 const LINK_FIELDS = models.Link.fields
 const CATEGORY_FIELDS = models.Category.fields
-
-/** Thrown for every non-2xx response. `body` is exactly what the API would send. */
-export class ApiError extends Error {
-  readonly status: number
-  readonly code: ErrorCode
-  readonly details?: FieldError[]
-  readonly body: ErrorBody
-
-  constructor(code: ErrorCode, details?: FieldError[], message = ERRORS[code].message) {
-    super(message)
-    this.name = 'ApiError'
-    this.code = code
-    this.status = ERRORS[code].status
-    this.details = details
-    this.body = { error: { code, message, ...(details ? { details } : {}) } }
-  }
-}
-
-/** One line of user-facing text for any error a call can produce. */
-export function describeError(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.details?.length ? error.details.map((d) => d.message).join(' ') : error.message
-  }
-  return 'Something went wrong. Try again.'
-}
 
 /* ---------- Options ---------- */
 
@@ -164,7 +131,7 @@ function subtree(categories: Category[], rootId: string): Set<string> {
 
 /* ---------- Service ---------- */
 
-export class LinkManagementService {
+export class LinkManagementService implements LinkManagementApi {
   private options: MockOptions
   private db: Db
 
@@ -430,11 +397,4 @@ export class LinkManagementService {
     }
     return clean
   }
-}
-
-/** The app-wide instance. Exposed as `window.mockApi` in development for poking at from the console. */
-export const linkMgmtService = new LinkManagementService()
-
-if (import.meta.env.DEV) {
-  ;(window as unknown as { mockApi: LinkManagementService }).mockApi = linkMgmtService
 }

@@ -1,0 +1,123 @@
+/**
+ * Link management over the real REST API (../link-organizer-api/docs/API.md).
+ *
+ * Used instead of the mock when VITE_API_BASE_URL is set; see link-mgmnt-client.ts.
+ * Responses are returned in the same shapes the mock returns, so nothing above the
+ * service layer can tell the two apart.
+ *
+ * One difference is bridged here: the API sends and accepts `rating: null` for
+ * "not rated", while the UI uses 0.
+ */
+import type {
+  Category,
+  CreateCategoryInput,
+  CreateLinkInput,
+  DataResponse,
+  DeleteCategoryResult,
+  ErrorBody,
+  ErrorCode,
+  LinkItem,
+  ListResponse,
+  Rating,
+  UpdateCategoryInput,
+  UpdateLinkInput,
+} from '../types'
+import { ApiError, type LinkManagementApi } from './contract'
+
+/** A link as the API sends it: `rating` is null when unrated. */
+type WireLink = Omit<LinkItem, 'rating'> & { rating: Rating | null }
+
+const fromWire = (link: WireLink): LinkItem => ({ ...link, rating: link.rating ?? 0 })
+
+/** Rating 0 means "not rated" in the UI; the API spells that null. */
+const toWire = <T extends UpdateLinkInput>(input: T) =>
+  input.rating === undefined ? input : { ...input, rating: input.rating === 0 ? null : input.rating }
+
+export class HttpLinkManagementService implements LinkManagementApi {
+  private readonly baseUrl: string
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '')
+  }
+
+  /* ----- Categories ----- */
+
+  listCategories() {
+    return this.request<ListResponse<Category>>('GET', '/api/categories')
+  }
+
+  getCategory(id: string) {
+    return this.request<DataResponse<Category>>('GET', `/api/categories/${encodeURIComponent(id)}`)
+  }
+
+  createCategory(input: CreateCategoryInput) {
+    return this.request<DataResponse<Category>>('POST', '/api/categories', input)
+  }
+
+  updateCategory(id: string, input: UpdateCategoryInput) {
+    return this.request<DataResponse<Category>>('PATCH', `/api/categories/${encodeURIComponent(id)}`, input)
+  }
+
+  deleteCategory(id: string) {
+    return this.request<DataResponse<DeleteCategoryResult>>('DELETE', `/api/categories/${encodeURIComponent(id)}`)
+  }
+
+  /* ----- Links ----- */
+
+  async listLinks(): Promise<ListResponse<LinkItem>> {
+    const res = await this.request<ListResponse<WireLink>>('GET', '/api/links')
+    return { ...res, data: res.data.map(fromWire) }
+  }
+
+  async getLink(id: string): Promise<DataResponse<LinkItem>> {
+    const res = await this.request<DataResponse<WireLink>>('GET', `/api/links/${encodeURIComponent(id)}`)
+    return { data: fromWire(res.data) }
+  }
+
+  async createLink(input: CreateLinkInput): Promise<DataResponse<LinkItem>> {
+    const res = await this.request<DataResponse<WireLink>>('POST', '/api/links', toWire(input))
+    return { data: fromWire(res.data) }
+  }
+
+  async updateLink(id: string, input: UpdateLinkInput): Promise<DataResponse<LinkItem>> {
+    const res = await this.request<DataResponse<WireLink>>('PATCH', `/api/links/${encodeURIComponent(id)}`, toWire(input))
+    return { data: fromWire(res.data) }
+  }
+
+  async deleteLink(id: string): Promise<void> {
+    await this.request<void>('DELETE', `/api/links/${encodeURIComponent(id)}`)
+  }
+
+  /* ----- Internals ----- */
+
+  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    let res: Response
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, {
+        method,
+        // The API sends ETags, so a cached GET would be revalidated and answered with
+        // 304 Not Modified and no body. React Query is the app's cache; skip the HTTP one.
+        cache: 'no-store',
+        headers: body === undefined ? { Accept: 'application/json' } : { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+    } catch {
+      // Network failure: server down, wrong address, or blocked by CORS.
+      throw new ApiError('SERVICE_UNAVAILABLE', undefined, `Can't reach the server at ${this.baseUrl}. Check that the API is running.`, 0)
+    }
+
+    if (res.status === 204) return undefined as T
+
+    const payload: unknown = await res.json().catch(() => undefined)
+
+    if (!res.ok) {
+      const error = (payload as Partial<ErrorBody> | undefined)?.error
+      if (error?.code) throw new ApiError(error.code as ErrorCode, error.details, error.message, res.status)
+      throw new ApiError(res.status >= 500 ? 'INTERNAL_ERROR' : 'NOT_FOUND', undefined, undefined, res.status)
+    }
+    if (payload === undefined) {
+      throw new ApiError('INTERNAL_ERROR', undefined, 'The server sent a response the app could not read.', res.status)
+    }
+    return payload as T
+  }
+}

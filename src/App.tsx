@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState, type Ref } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { categoryPath, subtreeIds } from './lib/categories'
 import type { Category, LinkDraft, LinkItem, Rating } from './types'
-import { describeError } from './services/link-mgmnt-services'
+import { describeError } from './services/contract'
 import {
   useCategories,
   useCreateCategory,

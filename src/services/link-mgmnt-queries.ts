@@ -7,7 +7,7 @@
  */
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Category, CreateCategoryInput, CreateLinkInput, LinkItem, UpdateCategoryInput, UpdateLinkInput } from '../types'
-import { linkMgmtService as api } from './link-mgmnt-services'
+import { linkMgmtService as api } from './link-mgmnt-client'
 
 export const queryKeys = {
   categories: ['categories'] as const,
