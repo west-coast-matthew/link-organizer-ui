@@ -48,6 +48,6 @@ You can also set it for a single run: `VITE_API_BASE_URL=http://127.0.0.1:3000 n
 
 To go back to the mock, remove the line or leave it empty, then restart. In development the browser console logs which backend is in use (`[api] using …`).
 
-If the app shows "Can't reach the server at …", check that the API is running at that address and that its `CORS_ORIGIN` setting allows `http://127.0.0.1:5173`.
+If the app shows "Can't reach the server at …", check that the API is running at that address and that its `CORS_ORIGIN` setting allows the UI's origin. The defaults allow both Vite ports `5173` and `5174` on `localhost` and `127.0.0.1`; if you change `CORS_ORIGIN`, include the origin shown in the browser's address bar. Restart the API after changing its configuration.
 
 The mock's delay and failure rate are set with `VITE_MOCK_MIN_DELAY_MS`, `VITE_MOCK_MAX_DELAY_MS` and `VITE_MOCK_ERROR_RATE`; see `.env.example`.

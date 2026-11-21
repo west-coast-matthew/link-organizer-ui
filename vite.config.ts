@@ -29,6 +29,13 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     open: true,
+    proxy: {
+      // Any request starting with /api goes to localhost:3000
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   preview: { host: '127.0.0.1' },
   build: {
