@@ -1,0 +1,39 @@
+{
+  "name": "Export everything",
+  "method": "GET",
+  "path": "/api/export",
+  "description": "Every category and link as one backup file (spec 008 here, spec 004 in link-organizer-api). The body is the file itself, not wrapped in { data }. Thumbnails aren't included.",
+  "request": { "params": null, "query": null, "body": null },
+  "format": "format and version identify the file. categories and links are the API's own Category and Link objects: categories parents first, links oldest first. In the file, rating is 1-5 or null for not rated (the UI's 0). Notes are sanitized HTML strings.",
+  "responses": [
+    {
+      "status": 200,
+      "description": "OK. Sent as a download: Content-Disposition: attachment; filename=link-organizer-backup-YYYY-MM-DD.json (UTC date).",
+      "headers": { "Content-Type": "application/json", "Content-Disposition": "attachment; filename=link-organizer-backup-2026-11-25.json" },
+      "body": {
+        "format": "link-organizer-export",
+        "version": 1,
+        "exportedAt": "2026-11-25T18:00:00.000Z",
+        "counts": { "categories": 2, "links": 1 },
+        "categories": [
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "name": "Food", "parentId": null, "createdAt": "2026-11-01T10:00:00.000Z", "updatedAt": "2026-11-01T10:00:00.000Z" },
+          { "id": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02", "name": "Italian", "parentId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e01", "createdAt": "2026-11-01T10:01:00.000Z", "updatedAt": "2026-11-01T10:01:00.000Z" }
+        ],
+        "links": [
+          {
+            "id": "9b2e7a10-4c3d-4e5f-8a6b-7c8d9e0f1a02",
+            "title": "Wonderfull",
+            "url": "https://www.wonderfull.co",
+            "description": null,
+            "notes": "<p>See <a href=\"https://www.wonderfull.co/careers\" target=\"_blank\" rel=\"noopener noreferrer\">Careers</a></p>",
+            "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e02",
+            "rating": 4,
+            "createdAt": "2026-11-02T09:00:00.000Z",
+            "updatedAt": "2026-11-02T09:00:00.000Z"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": ["INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}

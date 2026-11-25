@@ -20,6 +20,7 @@ import { LinkRow } from './components/LinkRow'
 import { useViewPreferences, type ViewMode } from './stores/view-preferences'
 import { LinkForm } from './components/LinkForm'
 import { BulkImportForm } from './components/BulkImportForm'
+import { BackupDialog } from './components/BackupDialog'
 import { StatusText } from './components/StatusText'
 import { Eyebrow, Icon, Toggle } from './components/ui'
 
@@ -94,6 +95,8 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [editor, setEditor] = useState<Editor>(null)
   const [bulkImport, setBulkImport] = useState<BulkImport>(null)
+  const [backupOpen, setBackupOpen] = useState(false)
+  const closeBackup = useCallback(() => setBackupOpen(false), [])
   const viewMode = useViewPreferences((s) => s.viewMode)
   const setViewMode = useViewPreferences((s) => s.setViewMode)
 
@@ -178,6 +181,7 @@ export default function App() {
         }}
         onAddLink={(categoryId) => openEditor({ mode: 'add', categoryId })}
         onImportLinks={openBulkImport}
+        onBackup={() => setBackupOpen(true)}
         status={sidebarStatus}
       />
 
@@ -320,6 +324,8 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>{backupOpen && <BackupDialog key="backup" onClose={closeBackup} />}</AnimatePresence>
     </div>
   )
 }

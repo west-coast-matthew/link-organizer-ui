@@ -10,6 +10,7 @@ import type {
   Category,
   CreateCategoryInput,
   CreateLinkInput,
+  ExportDocument,
   ImportLinksInput,
   LinkItem,
   UpdateCategoryInput,
@@ -137,6 +138,24 @@ export function useImportLinks() {
       const added = [...data.created].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       const ids = new Set(added.map((l) => l.id))
       qc.setQueryData<LinkItem[]>(queryKeys.links, (list) => (list ? [...added, ...list.filter((l) => !ids.has(l.id))] : list))
+    },
+  })
+}
+
+/* ---------- Backup (spec 008) ---------- */
+
+/** Fetches every category and link as one backup document; the caller saves it as a file. */
+export const useExportData = () => useMutation({ mutationFn: () => api.exportData() })
+
+/** Merges a backup file. When anything was created, the category and link lists are fetched again. */
+export function useImportData() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (document: ExportDocument) => api.importData(document),
+    onSuccess: ({ data }) => {
+      if (!data.categories.created && !data.links.created) return
+      void qc.invalidateQueries({ queryKey: queryKeys.categories, exact: true })
+      void qc.invalidateQueries({ queryKey: queryKeys.links, exact: true })
     },
   })
 }

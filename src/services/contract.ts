@@ -11,7 +11,9 @@ import type {
   DeleteCategoryResult,
   ErrorBody,
   ErrorCode,
+  ExportDocument,
   FieldError,
+  ImportBackupResponse,
   ImportLinksInput,
   ImportLinksResponse,
   LinkItem,
@@ -37,6 +39,11 @@ export interface LinkManagementApi {
   importLinks(input: ImportLinksInput): Promise<ImportLinksResponse>
   /** The link's thumbnail image, or null when it has none (yet). Thumbnails are generated after a create. */
   getLinkThumbnail(id: string): Promise<Blob | null>
+
+  /** Every category and link as one backup file (mock-data/backup/export.json). */
+  exportData(): Promise<ExportDocument>
+  /** Merges a backup file into the data; never overwrites (mock-data/backup/import.json). */
+  importData(document: ExportDocument): Promise<ImportBackupResponse>
 }
 
 export interface ErrorDefinition {

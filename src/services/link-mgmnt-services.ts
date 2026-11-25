@@ -19,8 +19,12 @@ import type {
   DataResponse,
   DeleteCategoryResult,
   ErrorCode,
+  ExportDocument,
+  ExportedLink,
   FieldError,
+  ImportBackupResponse,
   ImportLinksInput,
+  ImportSkippedLink,
   ImportLinksResponse,
   LinkItem,
   ListResponse,
@@ -43,7 +47,19 @@ import updateLinkDef from '../../mock-data/links/update.json'
 import deleteLinkDef from '../../mock-data/links/delete.json'
 import linkThumbnailDef from '../../mock-data/links/thumbnail.json'
 import importLinksDef from '../../mock-data/links/import.json'
+import exportDef from '../../mock-data/backup/export.json'
+import importDataDef from '../../mock-data/backup/import.json'
 import { parseBulkLinks, MAX_ENTRIES } from '../lib/bulk-links'
+import {
+  backupProblem,
+  EXPORT_FORMAT,
+  EXPORT_VERSION,
+  isObject,
+  isoOr,
+  isUuid,
+  parentsFirst,
+  planCategoryImport,
+} from '../lib/backup'
 import { sanitizeNotes } from '../lib/notes'
 
 /* ---------- Contract plumbing ---------- */
@@ -327,6 +343,99 @@ export class LinkManagementService implements LinkManagementApi {
     return this.request(linkThumbnailDef, { id }, () => {
       this.findLink(id)
       return null
+    })
+  }
+
+  /* ----- Backup (spec 008): the same rules as the API's GET /api/export and POST /api/import ----- */
+
+  exportData(): Promise<ExportDocument> {
+    return this.request(exportDef, {}, () => {
+      const oldestFirst = <T extends { createdAt: string }>(list: T[]) => [...list].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      const categories = parentsFirst(oldestFirst(this.db.categories))
+      // The file uses the API's spelling: null for "not rated".
+      const links = oldestFirst(this.db.links).map((l): ExportedLink => ({ ...l, rating: l.rating === 0 ? null : l.rating }))
+      return {
+        format: EXPORT_FORMAT,
+        version: EXPORT_VERSION,
+        exportedAt: new Date().toISOString(),
+        counts: { categories: categories.length, links: links.length },
+        categories,
+        links,
+      }
+    })
+  }
+
+  importData(document: ExportDocument): Promise<ImportBackupResponse> {
+    return this.request(importDataDef, {}, () => {
+      const problem = backupProblem(document)
+      if (problem) throw new ApiError('VALIDATION_FAILED', [problem])
+      const doc = document as { categories: unknown[]; links: unknown[] }
+      const now = new Date().toISOString()
+
+      const categories = planCategoryImport(doc.categories, this.db.categories, CATEGORY_FIELDS.name.maxLength, now)
+      this.db.categories.push(...categories.create)
+
+      let created = 0
+      const skipped: ImportSkippedLink[] = []
+      const usedIds = new Set(this.db.links.map((l) => l.id))
+      doc.links.forEach((raw, i) => {
+        const index = i + 1
+        const title = isObject(raw) && typeof raw.title === 'string' ? raw.title.trim() : ''
+        const url = isObject(raw) && typeof raw.url === 'string' ? raw.url.trim() : ''
+        const skip = (code: ErrorCode, message: string) => skipped.push({ index, title, url, code, message })
+
+        if (!isObject(raw)) return skip('VALIDATION_FAILED', "This entry isn't a link.")
+        // Type checks the form never needs but a file might: the API answers these the same way.
+        const problems: string[] = []
+        if (raw.description != null && typeof raw.description !== 'string') problems.push('The description must be text.')
+        const rating = raw.rating ?? null
+        if (rating !== null && (!Number.isInteger(rating) || (rating as number) < 1 || (rating as number) > 5))
+          problems.push('Rating must be a whole number from 1 to 5, or null for not rated.')
+        if (problems.length) return skip('VALIDATION_FAILED', problems.join(' '))
+
+        let clean: Partial<LinkItem>
+        try {
+          clean = this.validateLink(
+            {
+              title: typeof raw.title === 'string' ? raw.title : '',
+              url: typeof raw.url === 'string' ? raw.url : '',
+              description: (raw.description as string | null | undefined) ?? null,
+              notes: (raw.notes as string | null | undefined) ?? null,
+              rating: (rating ?? 0) as Rating,
+            },
+            null,
+          )
+        } catch (error) {
+          if (!(error instanceof ApiError)) throw error
+          return skip(error.code, error.details?.map((d) => d.message).join(' ') || error.message)
+        }
+
+        const fileId = isUuid(raw.id) ? raw.id.toLowerCase() : null
+        const id = fileId && !usedIds.has(fileId) ? fileId : crypto.randomUUID()
+        usedIds.add(id)
+        const createdAt = isoOr(raw.createdAt, now)
+        // Added to the data straight away, so a URL repeated later in the file is a duplicate.
+        this.db.links.unshift({
+          id,
+          title: clean.title!,
+          url: clean.url!,
+          description: clean.description ?? null,
+          notes: clean.notes ?? null,
+          categoryId: categories.resolve(raw.categoryId),
+          rating: clean.rating ?? 0,
+          createdAt,
+          updatedAt: isoOr(raw.updatedAt, createdAt),
+        })
+        created++
+      })
+
+      return {
+        data: {
+          categories: { created: categories.create.length, existing: categories.existing, merged: categories.merged, skipped: categories.skipped },
+          links: { created, skipped },
+        },
+        meta: { categories: doc.categories.length, links: doc.links.length },
+      }
     })
   }
 

@@ -18,6 +18,8 @@ interface Props {
   onAddLink: (categoryId: string) => void
   /** Open the bulk import dialog with this category preselected. */
   onImportLinks: (categoryId: string) => void
+  /** Open the Backup & restore dialog. */
+  onBackup: () => void
   /** Loading / saving / error text for category data, shown above the "New category" button. */
   status?: ReactNode
 }
@@ -77,6 +79,7 @@ export function Sidebar({
   onDelete,
   onAddLink,
   onImportLinks,
+  onBackup,
   status,
 }: Props) {
   // Track collapsed rather than expanded nodes so categories that arrive later start open.
@@ -259,6 +262,9 @@ export function Sidebar({
 
       <button type="button" className="btn btn--dashed mono" onClick={() => setAdding('root')}>
         <Icon name="plus" size={14} /> New category
+      </button>
+      <button type="button" className="btn btn--ghost mono sidebar__backup" onClick={onBackup}>
+        <Icon name="archive" size={14} /> Backup &amp; restore
       </button>
     </aside>
   )

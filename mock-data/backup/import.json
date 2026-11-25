@@ -1,0 +1,49 @@
+{
+  "name": "Import a backup file",
+  "method": "POST",
+  "path": "/api/import",
+  "description": "Merges an export file (see export.json) into the data. Nothing that already exists is changed or deleted, so importing into empty data is a full restore. Each item is saved on its own: importing the same file again creates nothing, and a retry after a failure part-way through is safe.",
+  "request": {
+    "params": null,
+    "query": null,
+    "body": "An export file, exactly as GET /api/export returns it. At most 50 MB, 5,000 categories and 20,000 links."
+  },
+  "responses": [
+    {
+      "status": 201,
+      "description": "Something was created. (200 with the same body when nothing was.) index is the 1-based position in the file's categories or links array; meta counts the entries in the file.",
+      "body": {
+        "data": {
+          "categories": { "created": 1, "existing": 0, "merged": 1, "skipped": [] },
+          "links": {
+            "created": 0,
+            "skipped": [
+              { "index": 1, "title": "Wonderfull", "url": "https://www.wonderfull.co", "code": "DUPLICATE_URL", "message": "Already saved as \"Wonderfull\"." }
+            ]
+          }
+        },
+        "meta": { "categories": 2, "links": 1 }
+      }
+    },
+    {
+      "status": 400,
+      "description": "Not an export file. Nothing is written.",
+      "body": {
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Some fields need attention.",
+          "details": [{ "field": "format", "message": "This isn't a Link Organizer export file." }]
+        }
+      }
+    }
+  ],
+  "rules": [
+    "format must be \"link-organizer-export\" (field format: \"This isn't a Link Organizer export file.\"), version must be 1 (field version), categories and links must be arrays of at most 5,000 and 20,000 entries (field categories / links). Breaking any of these rejects the whole request with 400 VALIDATION_FAILED.",
+    "Categories, parents first: an id that already exists is used as is (existing). Otherwise a category with the same name (case-insensitive) under the same parent is reused (merged). Otherwise it's created with the file's id, name and timestamps.",
+    "A parentId in neither the file nor the data, or one that forms a cycle, makes the category top-level. A category entry with an invalid id or name is skipped (VALIDATION_FAILED); its subcategories become top-level and its links unsorted.",
+    "Links, in file order: a URL that's already saved, or repeated earlier in the file, is skipped with DUPLICATE_URL. The create rules apply (notes sanitized); a link that breaks one is skipped with VALIDATION_FAILED.",
+    "A link keeps its id unless it's taken (then it gets a new one), and keeps createdAt/updatedAt when they're valid ISO timestamps. Its categoryId follows the category mapping; an unknown category makes it unsorted.",
+    "rating in the file is 1-5 or null (not rated)."
+  ],
+  "errors": ["VALIDATION_FAILED", "INTERNAL_ERROR", "SERVICE_UNAVAILABLE"]
+}
