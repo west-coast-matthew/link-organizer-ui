@@ -16,6 +16,8 @@ import type {
   DeleteCategoryResult,
   ErrorBody,
   ErrorCode,
+  ExportDocument,
+  ImportBackupResponse,
   ImportLinksInput,
   ImportLinksResponse,
   LinkItem,
@@ -108,6 +110,17 @@ export class HttpLinkManagementService implements LinkManagementApi {
     if (res.status === 404) return null
     if (!res.ok) throw await this.errorFrom(res)
     return res.blob()
+  }
+
+  /* ----- Backup (spec 008) ----- */
+
+  /** The body is the backup file itself, in the API's spelling; it's passed through unchanged. */
+  exportData() {
+    return this.request<ExportDocument>('GET', '/api/export')
+  }
+
+  importData(document: ExportDocument) {
+    return this.request<ImportBackupResponse>('POST', '/api/import', document)
   }
 
   /* ----- Internals ----- */

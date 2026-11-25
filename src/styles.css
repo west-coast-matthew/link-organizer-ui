@@ -861,3 +861,27 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-3);
   pointer-events: none;
 }
+
+/* ---------- Backup & restore (spec 008) ---------- */
+.sidebar__backup { justify-content: center; }
+.backup__part { display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px dashed var(--dash); }
+.backup__title { margin: 0; font-size: 16px; font-weight: 500; color: var(--text); }
+.backup__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
+.backup__row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.backup__note { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: #8fcf9a; }
+.backup__note .mono { color: var(--text-2); }
+.backup__file {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px dashed var(--border-strong);
+  border-left: 2px solid #8fcf9a;
+  border-radius: var(--radius-sm);
+}
+.backup__file.is-error { border-left-color: var(--accent); }
+.backup__file-name { font-size: 13px; color: var(--text); overflow-wrap: anywhere; }
+.backup__file-meta { font-size: 13px; color: var(--text-2); }
+.backup__file.is-error .backup__file-meta { color: var(--accent-hover); }

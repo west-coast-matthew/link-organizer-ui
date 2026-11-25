@@ -28,6 +28,22 @@ Cards show a link's notes under its description; in list mode, rows with notes h
 2. define links wich reside within an parent category
 3. support user interaction for interactig with links
 
+## Backup and restore
+
+**Backup & restore** at the bottom of the sidebar saves every category and link (with notes and
+ratings) as one file, `link-organizer-backup-YYYY-MM-DD.json`, and restores such a file later.
+
+- The file is JSON in the API's format (spec 008 here, spec 004 in link-organizer-api), so a backup
+  made against the mock imports into the real API and the other way round. Thumbnails aren't
+  included; they're made again after a restore.
+- Restoring merges: nothing is overwritten or deleted. Categories are matched by id, then by name
+  under the same parent; links whose address is already saved are skipped. Restoring into empty
+  data brings everything back as it was; restoring the same file twice adds nothing the second time.
+- The file is checked in the browser before it's sent, and the dialog lists anything it skipped.
+
+The same calls work without the UI: `curl -OJ $API/api/export` and
+`curl -X POST $API/api/import -H 'Content-Type: application/json' --data-binary @file.json`.
+
 ## Running the app
 
 ```sh

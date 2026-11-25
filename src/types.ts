@@ -86,6 +86,53 @@ export interface DeleteCategoryResult {
   movedTo: string | null
 }
 
+/* ---------- Backup: export and import (spec 008; mock-data/backup) ---------- */
+
+/** A link as it appears in a backup file: the API's spelling, where "not rated" is null. */
+export type ExportedLink = Omit<LinkItem, 'rating'> & { rating: Exclude<Rating, 0> | null }
+
+/** A backup file: every category (parents first) and every link (oldest first). */
+export interface ExportDocument {
+  format: 'link-organizer-export'
+  version: 1
+  /** ISO timestamp of when the file was made. */
+  exportedAt: string
+  counts: { categories: number; links: number }
+  categories: Category[]
+  links: ExportedLink[]
+}
+
+export interface ImportSkippedCategory {
+  /** 1-based position in the file's `categories` array. */
+  index: number
+  name: string
+  code: ErrorCode
+  message: string
+}
+export interface ImportSkippedLink {
+  /** 1-based position in the file's `links` array. */
+  index: number
+  title: string
+  url: string
+  code: ErrorCode
+  message: string
+}
+export interface ImportBackupResponse {
+  data: {
+    categories: {
+      created: number
+      /** Same id already saved; used as is. */
+      existing: number
+      /** Same name already under the same parent; merged into that category. */
+      merged: number
+      skipped: ImportSkippedCategory[]
+    }
+    links: { created: number; skipped: ImportSkippedLink[] }
+  }
+  /** Number of entries in the file. */
+  meta: { categories: number; links: number }
+}
+
 export type ErrorCode =
   | 'VALIDATION_FAILED'
   | 'NOT_FOUND'
