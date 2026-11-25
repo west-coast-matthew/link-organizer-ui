@@ -11,6 +11,7 @@
         "title": "Link.title",
         "url": "Link.url",
         "description": "Link.description",
+        "notes": "Link.notes",
         "categoryId": "Link.categoryId",
         "rating": "Link.rating"
       },
@@ -18,6 +19,7 @@
         "title": "Pozole rojo",
         "url": "https://www.mexicoinmykitchen.com/pozole-rojo/",
         "description": "Make the chile sauce a day ahead.",
+        "notes": "<p>Also try the <a href=\"https://www.mexicoinmykitchen.com/pozole-verde/\">verde version</a>.</p>",
         "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03",
         "rating": 4
       }
@@ -33,6 +35,7 @@
           "title": "Pozole rojo",
           "url": "https://www.mexicoinmykitchen.com/pozole-rojo/",
           "description": "Make the chile sauce a day ahead.",
+          "notes": "<p>Also try the <a href=\"https://www.mexicoinmykitchen.com/pozole-verde/\" target=\"_blank\" rel=\"noopener noreferrer\">verde version</a>.</p>",
           "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e03",
           "rating": 4,
           "createdAt": "2026-11-20T18:10:00.000Z",
@@ -47,6 +50,7 @@
     "url must be an absolute http(s) URL, otherwise VALIDATION_FAILED on url.",
     "url must not match an existing link's url, otherwise DUPLICATE_URL.",
     "categoryId, when not null, must reference an existing category, otherwise VALIDATION_FAILED on categoryId.",
-    "rating must be an integer from 0 to 5; omitted means 0."
+    "rating must be an integer from 0 to 5; omitted means 0.",
+    "notes must be a string or null, otherwise VALIDATION_FAILED on notes. It is sanitized (see Link.notes); notes left with no text and no links are stored as null; the sanitized HTML must be at most 20000 characters, otherwise VALIDATION_FAILED on notes."
   ]
 }

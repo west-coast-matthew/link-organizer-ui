@@ -11,6 +11,7 @@
         "title": "Link.title",
         "url": "Link.url",
         "description": "Link.description",
+        "notes": "Link.notes",
         "categoryId": "Link.categoryId",
         "rating": "Link.rating"
       },
@@ -27,6 +28,7 @@
           "title": "You might not need an effect",
           "url": "https://react.dev/learn/you-might-not-need-an-effect",
           "description": "When to drop useEffect in favour of derived state and event handlers.",
+          "notes": null,
           "categoryId": "6f1d2c4e-8a3b-4c5d-9e7f-1a2b3c4d5e05",
           "rating": 5,
           "createdAt": "2026-11-15T08:05:00.000Z",

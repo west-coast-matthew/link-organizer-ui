@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import type { LinkItem, Rating } from '../types'
 import { StarRating } from './StarRating'
 import { LinkThumbnail } from './LinkThumbnail'
+import { LinkNotes } from './LinkNotes'
 import { Icon, hostOf, timeAgo } from './ui'
 
 interface Props {
@@ -49,6 +50,7 @@ export const LinkCard = forwardRef<HTMLElement, Props>(function LinkCard({ link,
           </span>
         </header>
         {link.description && <p className="card__desc">{link.description}</p>}
+        <LinkNotes html={link.notes} className="card__notes" />
 
         <div className="card__rating">
           <StarRating value={link.rating} onChange={onRate} />

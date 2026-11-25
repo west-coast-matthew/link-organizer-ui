@@ -10,12 +10,13 @@
     }
   },
   "Link": {
-    "description": "A saved web link.",
+    "description": "A saved web link. A link can be a parent link whose notes hold related sub-links.",
     "fields": {
       "id": { "type": "string", "format": "uuid", "readOnly": true },
       "title": { "type": "string", "required": true, "minLength": 1, "maxLength": 200 },
       "url": { "type": "string", "format": "uri", "required": true, "maxLength": 2048, "description": "Absolute http(s) URL. Unique across all links." },
       "description": { "type": ["string", "null"], "maxLength": 2000, "default": null },
+      "notes": { "type": ["string", "null"], "format": "html", "maxLength": 20000, "default": null, "description": "Rich text notes (an HTML fragment), e.g. related sub-links under a parent link. The server sanitizes it: allowed tags p, br, strong, b, em, i, u, s, code, pre, blockquote, h3, h4, ul, ol, li, a, hr; the only attribute is href on a (http, https or mailto), and every a gets target=\"_blank\" rel=\"noopener noreferrer\". Notes with no text and no links are stored as null." },
       "categoryId": { "type": ["string", "null"], "format": "uuid", "references": "Category.id", "default": null, "description": "Category or subcategory the link is filed in. null means unsorted." },
       "rating": { "type": "integer", "minimum": 0, "maximum": 5, "default": 0, "description": "0 means not rated; 1-5 are stars." },
       "createdAt": { "type": "string", "format": "date-time", "readOnly": true, "description": "Time the link was added." },

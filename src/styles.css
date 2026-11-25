@@ -745,3 +745,119 @@ a { color: inherit; text-decoration: none; }
   .row__time { display: none; }
   .row__tools { opacity: 1; grid-row: 1 / span 2; grid-column: 2; }
 }
+
+/* ---------- Rich text notes (spec 007) ---------- */
+.notes { color: var(--text-2); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.notes > :first-child { margin-top: 0; }
+.notes > :last-child { margin-bottom: 0; }
+.notes p, .notes ul, .notes ol, .notes blockquote, .notes pre { margin: 0 0 8px; }
+.notes ul, .notes ol { padding-left: 20px; }
+.notes li { margin: 2px 0; }
+.notes li > p { margin: 0; }
+.notes li::marker { color: var(--text-3); }
+.notes h3, .notes h4 { margin: 10px 0 6px; color: var(--text); font-weight: 500; }
+.notes h3 { font-size: 15px; }
+.notes h4 { font-size: 14px; }
+.notes a { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+.notes a:hover { color: var(--accent-hover); text-decoration-color: var(--accent); }
+.notes strong, .notes b { color: var(--text); font-weight: 600; }
+.notes code { font-family: var(--mono); font-size: 0.9em; padding: 1px 5px; border-radius: 4px; background: var(--surface-3); }
+.notes pre { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg); overflow-x: auto; }
+.notes pre code { padding: 0; background: none; }
+.notes blockquote { padding-left: 12px; border-left: 2px solid var(--border-strong); }
+.notes hr { border: 0; border-top: 1px dashed var(--border-strong); margin: 10px 0; }
+
+.card__notes {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.row__notes-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+.row__notes-toggle:hover { color: var(--text); }
+.row__notes-toggle svg { transition: transform 0.15s; }
+.row__notes-toggle.is-open svg { transform: rotate(180deg); }
+.row__notes { grid-column: 1 / -1; overflow: hidden; }
+.row__notes .notes { padding: 4px 0 8px; }
+
+/* Editor */
+.control--rich { flex-direction: column; align-items: stretch; }
+.control--rich.is-disabled { opacity: 0.5; cursor: not-allowed; }
+.control--rich[aria-invalid='true'] { border-color: var(--accent); }
+.rte__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.rte__tool {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+.rte__tool:hover:not(:disabled) { color: var(--text); background: var(--surface-3); }
+.rte__tool.is-active { color: var(--accent-hover); background: var(--accent-soft); }
+.rte__tool:disabled { cursor: not-allowed; }
+.rte__sep { width: 1px; height: 16px; margin: 0 4px; background: var(--border); }
+.rte__linkbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.rte__linkbar input {
+  flex: 1 1 160px;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  outline: none;
+}
+.rte__linkbar input:focus { border-color: var(--accent-line); }
+.rte__linkbar input[aria-invalid='true'] { border-color: var(--accent); }
+.rte__linkbtn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+}
+.rte__linkbtn--primary { border-color: transparent; background: var(--accent); color: #fff; }
+.rte__linkerror { flex-basis: 100%; }
+.rte__content .ProseMirror {
+  min-height: 96px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  outline: none;
+  color: var(--text);
+}
+.rte__content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--text-3);
+  pointer-events: none;
+}
