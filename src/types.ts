@@ -20,6 +20,8 @@ export interface LinkItem {
   title: string
   url: string
   description: string | null
+  /** Rich text notes as a sanitized HTML fragment (e.g. related sub-links under a parent link); null = none. */
+  notes: string | null
   /** Category or subcategory the link lives in; null = unsorted. */
   categoryId: string | null
   rating: Rating
@@ -34,6 +36,8 @@ export interface CreateLinkInput {
   title: string
   url: string
   description?: string | null
+  /** HTML fragment from the rich text editor; the server sanitizes it. */
+  notes?: string | null
   categoryId?: string | null
   rating?: Rating
 }

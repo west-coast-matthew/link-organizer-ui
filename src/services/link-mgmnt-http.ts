@@ -29,7 +29,7 @@ import { ApiError, type LinkManagementApi } from './contract'
 /** A link as the API sends it: `rating` is null when unrated. */
 type WireLink = Omit<LinkItem, 'rating'> & { rating: Rating | null }
 
-const fromWire = (link: WireLink): LinkItem => ({ ...link, rating: link.rating ?? 0 })
+const fromWire = (link: WireLink): LinkItem => ({ ...link, notes: link.notes ?? null, rating: link.rating ?? 0 })
 
 /** Rating 0 means "not rated" in the UI; the API spells that null. */
 const toWire = <T extends UpdateLinkInput>(input: T) =>

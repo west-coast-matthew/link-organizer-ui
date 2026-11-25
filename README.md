@@ -8,10 +8,20 @@ The initial effort will be one where we take an MVP approach. We will byoass use
 
 ## link definitions
 
-* title (optional)
-* link
-* description (optional)
-* 1-4 for star rating
+A link definition started out describing a single link. It now describes a *parent* link, for
+example `https://www.wonderfull.co`, which can carry notes about related material, including
+sub-links such as the site's "Careers" and "About" pages.
+
+* title
+* link (the parent link)
+* description (optional, plain text)
+* notes (optional, rich text): formatted text, lists and hyperlinks, written with the rich text
+  editor in the add/edit form. Use it for sub-links and anything else related to the parent link.
+  Notes are stored as sanitized HTML (spec 007 here, spec 003 in link-organizer-api).
+* 1-5 for star rating (0 = not rated)
+
+Cards show a link's notes under its description; in list mode, rows with notes have a
+**Notes** toggle that expands them. Links in notes open in a new tab.
 
 ## Requirements:
 1. Support the ability to store links by categories in a hierachal manner, i.e. a parent category called 'food links' may have child categories such as 'italian' and 'mexican'.

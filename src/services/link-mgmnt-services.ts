@@ -44,6 +44,7 @@ import deleteLinkDef from '../../mock-data/links/delete.json'
 import linkThumbnailDef from '../../mock-data/links/thumbnail.json'
 import importLinksDef from '../../mock-data/links/import.json'
 import { parseBulkLinks, MAX_ENTRIES } from '../lib/bulk-links'
+import { sanitizeNotes } from '../lib/notes'
 
 /* ---------- Contract plumbing ---------- */
 
@@ -99,7 +100,12 @@ function seedDb(): Db {
 function loadDb(): Db {
   try {
     const raw = localStorage.getItem(DB_KEY)
-    if (raw) return JSON.parse(raw) as Db
+    if (raw) {
+      const db = JSON.parse(raw) as Db
+      // Links saved before notes existed (spec 007) have no notes field.
+      db.links = db.links.map((l) => ({ ...l, notes: l.notes ?? null }))
+      return db
+    }
   } catch {
     /* unreadable or unavailable — start from the seed */
   }
@@ -241,6 +247,7 @@ export class LinkManagementService implements LinkManagementApi {
         title: clean.title!,
         url: clean.url!,
         description: clean.description ?? null,
+        notes: clean.notes ?? null,
         categoryId: clean.categoryId ?? null,
         rating: clean.rating ?? 0,
         createdAt: now,
@@ -291,6 +298,7 @@ export class LinkManagementService implements LinkManagementApi {
             title: clean.title!,
             url: clean.url!,
             description: clean.description ?? null,
+            notes: null,
             categoryId: clean.categoryId ?? null,
             rating: 0,
             createdAt: now,
@@ -437,6 +445,16 @@ export class LinkManagementService implements LinkManagementApi {
       if (description && description.length > LINK_FIELDS.description.maxLength)
         details.push({ field: 'description', message: `Keep the description under ${LINK_FIELDS.description.maxLength} characters.` })
       clean.description = description
+    }
+    if (input.notes !== undefined) {
+      if (input.notes !== null && typeof input.notes !== 'string') {
+        details.push({ field: 'notes', message: 'The notes must be text.' })
+      } else {
+        const notes = sanitizeNotes(input.notes)
+        if (notes && notes.length > LINK_FIELDS.notes.maxLength)
+          details.push({ field: 'notes', message: `Keep the notes under ${LINK_FIELDS.notes.maxLength} characters.` })
+        clean.notes = notes
+      }
     }
     if (input.categoryId !== undefined) {
       if (input.categoryId !== null && !this.db.categories.some((c) => c.id === input.categoryId))

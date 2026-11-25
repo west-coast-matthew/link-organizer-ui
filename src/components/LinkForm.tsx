@@ -4,6 +4,11 @@ import type { Category, LinkDraft, LinkItem, Rating } from '../types'
 import { StarRating } from './StarRating'
 import { Eyebrow, Icon } from './ui'
 import { Button, Field, SelectField, TextArea, TextField, type SelectOption } from './form'
+import { NotesEditor } from './NotesEditor'
+import { normaliseUrl } from '../lib/urls'
+import { NOTES_MAX_LENGTH, sanitizeNotes } from '../lib/notes'
+
+export { normaliseUrl }
 
 interface Props {
   categories: Category[]
@@ -20,18 +25,6 @@ interface Props {
   serverError?: string
   /** Called with the current values on every change (the artboard uses it to preview the request body). */
   onDraftChange?: (draft: LinkDraft) => void
-}
-
-export function normaliseUrl(raw: string): string | null {
-  const value = raw.trim()
-  if (!value) return null
-  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : `https://${value}`
-  try {
-    const u = new URL(withScheme)
-    return u.hostname.includes('.') || u.hostname === 'localhost' ? u.toString() : null
-  } catch {
-    return null
-  }
 }
 
 /** Categories flattened depth-first, for an indented <select>. */
@@ -55,19 +48,21 @@ export function LinkForm({
   const [url, setUrl] = useState(initial?.url ?? '')
   const [title, setTitle] = useState(initial?.title ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
+  const [notes, setNotes] = useState(initial?.notes ?? '')
   const [categoryId, setCategoryId] = useState<string | null>(initial ? initial.categoryId : defaultCategoryId)
   const [rating, setRating] = useState<Rating>(initial?.rating ?? 0)
-  const [errors, setErrors] = useState<{ url?: string; title?: string }>({})
+  const [errors, setErrors] = useState<{ url?: string; title?: string; notes?: string }>({})
 
   const draft = useMemo<LinkDraft>(
     () => ({
       url: normaliseUrl(url) ?? url.trim(),
       title: title.trim(),
       description: description.trim() || null,
+      notes: sanitizeNotes(notes),
       categoryId,
       rating,
     }),
-    [url, title, description, categoryId, rating],
+    [url, title, description, notes, categoryId, rating],
   )
 
   useEffect(() => {
@@ -88,9 +83,10 @@ export function LinkForm({
     const next = {
       url: cleanUrl ? undefined : 'Enter a web address, like example.com/article',
       title: title.trim() ? undefined : 'Add a title so you can find this link later',
+      notes: (draft.notes?.length ?? 0) > NOTES_MAX_LENGTH ? `Keep the notes under ${NOTES_MAX_LENGTH} characters` : undefined,
     }
     setErrors(next)
-    if (!cleanUrl || next.title) return
+    if (!cleanUrl || next.title || next.notes) return
     onSave({ ...draft, url: cleanUrl })
   }
 
@@ -156,6 +152,15 @@ export function LinkForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Notes, why it's worth keeping…"
+        />
+        <NotesEditor
+          label="Notes"
+          optional
+          value={initial?.notes ?? null}
+          onChange={setNotes}
+          disabled={saving}
+          placeholder="Related pages, sub-links (Careers, About…), anything else"
+          error={errors.notes}
         />
         <div className="field-row">
           <SelectField
